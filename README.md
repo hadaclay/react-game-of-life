@@ -1,5 +1,4 @@
 # Conway's Game of Life (React)
----
 The classic programming exercise implemented in React.js and SASS. Uses a standard HTML table as the board. Other Elementary Cellular Automata [rules](http://mathworld.wolfram.com/ElementaryCellularAutomaton.html) can easily be implemented in place of Game of Life.
 
 ![Screenshot](/screenshot.png?raw=true)
