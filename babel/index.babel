@@ -1,0 +1,266 @@
+class Cell extends React.Component {
+  constructor(props) {
+    super(props);
+    this.handleCellClick = this.handleCellClick.bind(this);
+  }
+
+  handleCellClick() {
+    return this.props.onCellClick(
+      this.props.row,
+      this.props.col,
+      this.props.status
+    );
+  }
+
+  render() {
+    return <td className={this.props.status} onClick={this.handleCellClick} />;
+  }
+}
+
+class Board extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      playing: false,
+      generation: 0,
+      delay: 60,
+      rows: 40,
+      columns: 40,
+      boardData: []
+    };
+
+    this.toggleCell = this.toggleCell.bind(this);
+    this.generateBoard = this.generateBoard.bind(this);
+    this.randomizeBoard = this.randomizeBoard.bind(this);
+    this.clearBoard = this.clearBoard.bind(this);
+    this.getNeighbors = this.getNeighbors.bind(this);
+    this.iterate = this.iterate.bind(this);
+    this.togglePlaying = this.togglePlaying.bind(this);
+  }
+
+  toggleCell(row, col, status) {
+    // When cell is clicked, toggle 'alive' or 'dead'
+    let newBoardData = this.state.boardData.slice(0), newStatus = '';
+    if (status === 'alive') {
+      newStatus = 'dead';
+    } else {
+      newStatus = 'alive';
+    }
+    newBoardData[row][col].status = newStatus;
+    this.setState({boardData: newBoardData});
+  }
+
+  randomizeBoard() {
+    let newBoardData = [], rows = this.state.rows, columns = this.state.columns;
+    for (let row = 0; row < rows; row++) {
+      let currentRow = [];
+      for (let col = 0; col < columns; col++) {
+        const randomStatus = Math.random() <= 0.3 ? 'alive' : 'dead';
+        currentRow.push({status: randomStatus});
+      }
+      newBoardData.push(currentRow);
+    }
+    this.setState({boardData: newBoardData, generation: 0});
+  }
+
+  clearBoard() {
+    let clearBoardState = [];
+    for (let r = 0; r < this.state.rows; r++) {
+      let currentRow = [];
+      for (let c = 0; c < this.state.columns; c++) {
+        currentRow.push({status: 'dead'});
+      }
+      clearBoardState.push(currentRow);
+    }
+    this.setState({
+      boardData: clearBoardState,
+      generation: 0
+    });
+  }
+
+  generateBoard() {
+    let boardElements = [], keyCounter = 0;
+    for (let r = 0; r < this.state.rows; r++) {
+      let currentRow = [];
+      for (let c = 0; c < this.state.columns; c++) {
+        currentRow.push(
+          <Cell
+            key={keyCounter}
+            row={r}
+            col={c}
+            onCellClick={this.toggleCell}
+            status={this.state.boardData[r][c].status}
+          />
+        );
+        keyCounter++;
+      }
+      boardElements.push(<tr>{currentRow}</tr>);
+    }
+    return boardElements;
+  }
+
+  getNeighbors(row, col, board) {
+    // Determine where a cell is on board, then get status of neighbors
+    let neighbors = [];
+    const rows = this.state.rows, columns = this.state.columns;
+    if (row === 0 && col === 0) {
+      // Top Left
+      neighbors = [
+        board[row][col + 1].status,
+        board[row + 1][col].status,
+        board[row + 1][col + 1].status
+      ];
+    } else if (row === 0 && col === columns - 1) {
+      // Top Right
+      neighbors = [
+        board[row][col - 1].status,
+        board[row + 1][col - 1].status,
+        board[row + 1][col].status
+      ];
+    } else if (row === rows - 1 && col === 0) {
+      // Bottom Left
+      neighbors = [
+        board[row - 1][col].status,
+        board[row - 1][col + 1].status,
+        board[row][col + 1].status
+      ];
+    } else if (row === rows - 1 && col === columns - 1) {
+      // Bottom Right
+      neighbors = [
+        board[row - 1][row].status,
+        board[row][row - 1].status,
+        board[row - 1][row - 1].status
+      ];
+    } else if (row === 0) {
+      // Top row
+      neighbors = [
+        board[row][col - 1].status,
+        board[row][col + 1].status,
+        board[row + 1][col - 1].status,
+        board[row + 1][col].status,
+        board[row + 1][col + 1].status
+      ];
+    } else if (row === rows - 1) {
+      // Bottom Row
+      neighbors = [
+        board[row - 1][col - 1].status,
+        board[row - 1][col].status,
+        board[row - 1][col + 1].status,
+        board[row][col - 1].status,
+        board[row][col + 1].status
+      ];
+    } else if (col === 0) {
+      // Left Column
+      neighbors = [
+        board[row - 1][col].status,
+        board[row - 1][col + 1].status,
+        board[row][col + 1].status,
+        board[row + 1][col].status,
+        board[row + 1][col + 1].status
+      ];
+    } else if (col === columns - 1) {
+      // Right Column
+      neighbors = [
+        board[row - 1][col - 1].status,
+        board[row - 1][col].status,
+        board[row][col - 1].status,
+        board[row + 1][col - 1].status,
+        board[row + 1][col].status
+      ];
+    } else {
+      // Everything else
+      neighbors = [
+        board[row - 1][col - 1].status,
+        board[row - 1][col].status,
+        board[row - 1][col + 1].status,
+        board[row][col - 1].status,
+        board[row][col + 1].status,
+        board[row + 1][col - 1].status,
+        board[row + 1][col].status,
+        board[row + 1][col + 1].status
+      ];
+    }
+    return neighbors;
+  }
+
+  iterate() {
+    // Copy boardData from state NOT by reference
+    let newBoardData = JSON.parse(JSON.stringify(this.state.boardData));
+
+    for (let r = 0; r < this.state.rows; r++) {
+      for (let c = 0; c < this.state.columns; c++) {
+        let neighbors = this.getNeighbors(r, c, this.state.boardData);
+        let neighborsAlive = neighbors.filter(
+          status => status === 'alive'
+        ).length;
+        let cellStatus = this.state.boardData[r][c].status;
+
+        // Dead cells with exactly 3 neighbors are reborn
+        if (cellStatus === 'alive') {
+          if (neighborsAlive < 2) {
+            // Underpopulation Death
+            newBoardData[r][c].status = 'dead';
+          } else if (neighborsAlive === 2 || neighborsAlive === 3) {
+            continue;
+          } else if (neighborsAlive > 3) {
+            // Overpopulation Death
+            newBoardData[r][c].status = 'dead';
+          }
+        }
+
+        if (cellStatus === 'dead') {
+          if (neighborsAlive >= 4 || neighborsAlive < 3) {
+            continue;
+          }
+          if (neighborsAlive === 3) {
+            newBoardData[r][c].status = 'alive';
+          }
+        }
+      }
+    }
+    let gen = this.state.generation;
+    gen++;
+    this.setState({boardData: newBoardData, generation: gen});
+  }
+
+  togglePlaying() {
+    if (this.state.playing) {
+      this.setState({playing: false});
+      clearInterval(this.state.delayIntervalID);
+    } else {
+      const delayIntervalID = setInterval(this.iterate, this.state.delay);
+      this.setState({playing: true, delayIntervalID: delayIntervalID});
+    }
+  }
+
+  componentWillMount() {
+    this.randomizeBoard();
+    const delayIntervalID = setInterval(this.iterate, this.state.delay);
+    this.setState({playing: true, delayIntervalID: delayIntervalID});
+  }
+
+  render() {
+    return (
+      <div>
+        <table>{this.generateBoard()}</table>
+        <div className="controls">
+          <h2>Generations: {this.state.generation}</h2>
+          <button className="btn blue-main" onClick={this.togglePlaying}>
+            {this.state.playing ? 'Stop' : 'Start'}
+          </button>
+          <button className="btn blue-secondary" onClick={this.iterate}>
+            Step
+          </button>
+          <button className="btn blue-secondary" onClick={this.clearBoard}>
+            Clear Board
+          </button>
+          <button className="btn blue-secondary" onClick={this.randomizeBoard}>
+            Randomize
+          </button>
+        </div>
+      </div>
+    );
+  }
+}
+
+ReactDOM.render(<Board />, document.getElementById('app'));

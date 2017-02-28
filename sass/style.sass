@@ -1,0 +1,62 @@
+$background-color: #EFEFEF
+$alive-color: #FF530D
+$alive-hover-color: #CC420A
+$border-color: #CFCFCF
+$cell-size: 10px
+
+body
+  background-color: $background-color
+  text-align: center
+  font-family: Sans-Serif
+  
+h2
+  margin: 0.2em
+
+table
+  border-spacing: 0
+  margin: 0 auto
+
+td
+  width: $cell-size
+  height: $cell-size
+  border: 1px solid $border-color
+  
+.alive
+  background-color: $alive-color
+  &:hover
+    background-color: $alive-hover-color
+  
+.dead
+  &:hover
+    background-color: $border-color
+
+button
+  margin-right: 0.5em
+  text-align: center
+  
+.btn
+  border: 0
+  outline: none
+  border-radius: 5px
+  padding: 10px 20px
+  font-size: 22px
+  text-decoration: none
+  margin: 8px
+  color: #fff
+  position: relative
+  display: inline-block
+.btn:active
+  transform: translate(0px, 5px)
+  box-shadow: 0px 1px 0px 0px
+    
+.blue-main
+  background-color: #3F5765
+  box-shadow: 0px 5px 0px 0px #2B3A42
+.blue-main:hover
+  background-color: #2B3A42
+  
+.blue-secondary
+  background-color: #98AAB2
+  box-shadow: 0 5px 0 0 #809096
+.blue-secondary:hover
+  background-color: #8999A1
